@@ -25,10 +25,10 @@ from comfy.cli_args import args
 from comfy.utils import ProgressBar, common_upscale
 import folder_paths
 from comfy import model_management
-try:
-    from server import PromptServer
-except:
-    PromptServer = None
+# try:
+#     from server import PromptServer
+# except:
+#     PromptServer = None
 from concurrent.futures import ThreadPoolExecutor
 
 script_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -2583,14 +2583,14 @@ highest dimension.
                 bytes_per_elem = image.element_size()  # typically 4 for float32
                 est_total_bytes = B * height * width * C * bytes_per_elem
                 est_mb = est_total_bytes / (1024 * 1024)
-                msg = f"<tr><td>Resize v2</td><td>estimated output ~{est_mb:.2f} MB; batching {per_batch}/{B}</td></tr>"
-                if unique_id and PromptServer is not None:
-                    try:
-                        PromptServer.instance.send_progress_text(msg, unique_id)
-                    except:
-                        pass
-                else:
-                    print(f"[ImageResizeKJv2] estimated output ~{est_mb:.2f} MB; batching {per_batch}/{B}")
+                # msg = f"<tr><td>Resize v2</td><td>estimated output ~{est_mb:.2f} MB; batching {per_batch}/{B}</td></tr>"
+                # if unique_id and PromptServer is not None:
+                #     try:
+                #         PromptServer.instance.send_progress_text(msg, unique_id)
+                #     except:
+                #         pass
+                # else:
+                print(f"[ImageResizeKJv2] estimated output ~{est_mb:.2f} MB; batching {per_batch}/{B}")
             except:
                 pass
 
@@ -2679,19 +2679,19 @@ highest dimension.
                 if mask is not None:
                     mask_chunks.append(sub_out_mask.cpu() if sub_out_mask is not None else None)
                 # Per-batch progress update
-                if unique_id and PromptServer is not None:
-                    try:
-                        PromptServer.instance.send_progress_text(
-                            f"<tr><td>Resize v2</td><td>batch {current_batch}/{total_batches} · images {end_idx}/{B}</td></tr>",
-                            unique_id
-                        )
-                    except:
-                        pass
-                else:
-                    try:
-                        print(f"[ImageResizeKJv2] batch {current_batch}/{total_batches} · images {end_idx}/{B}")
-                    except:
-                        pass
+                # if unique_id and PromptServer is not None:
+                #     try:
+                #         PromptServer.instance.send_progress_text(
+                #             f"<tr><td>Resize v2</td><td>batch {current_batch}/{total_batches} · images {end_idx}/{B}</td></tr>",
+                #             unique_id
+                #         )
+                #     except:
+                #         pass
+                # else:
+                try:
+                    print(f"[ImageResizeKJv2] batch {current_batch}/{total_batches} · images {end_idx}/{B}")
+                except:
+                    pass
             out_image = torch.cat(chunks, dim=0)
             if mask is not None and any(m is not None for m in mask_chunks):
                 out_mask = torch.cat([m for m in mask_chunks if m is not None], dim=0)
@@ -2699,17 +2699,17 @@ highest dimension.
                 out_mask = None
 
         # Progress UI
-        if unique_id and PromptServer is not None:
-            try:
-                num_elements = out_image.numel()
-                element_size = out_image.element_size()
-                memory_size_mb = (num_elements * element_size) / (1024 * 1024)
-                PromptServer.instance.send_progress_text(
-                    f"<tr><td>Output: </td><td><b>{out_image.shape[0]}</b> x <b>{out_image.shape[2]}</b> x <b>{out_image.shape[1]} | {memory_size_mb:.2f}MB</b></td></tr>",
-                    unique_id
-                )
-            except:
-                pass
+        # if unique_id and PromptServer is not None:
+        #     try:
+        #         num_elements = out_image.numel()
+        #         element_size = out_image.element_size()
+        #         memory_size_mb = (num_elements * element_size) / (1024 * 1024)
+        #         PromptServer.instance.send_progress_text(
+        #             f"<tr><td>Output: </td><td><b>{out_image.shape[0]}</b> x <b>{out_image.shape[2]}</b> x <b>{out_image.shape[1]} | {memory_size_mb:.2f}MB</b></td></tr>",
+        #             unique_id
+        #         )
+        #     except:
+        #         pass
 
         return (out_image.cpu(), out_image.shape[2], out_image.shape[1], out_mask.cpu() if out_mask is not None else torch.zeros(64,64, device=torch.device("cpu"), dtype=torch.float32))
 
